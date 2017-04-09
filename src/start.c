@@ -1,13 +1,10 @@
 #include "argparse.h"
-#include <stdio.h>
+#include "log.h"
+#include "engine.h"
 
-//struct start_opts {
-//    int daemonize;
-//    int cpu_perc;
-//    unsigned char net[4];
-//    int forward_argc;
-//    char **forward_argv;
-//};
+#include <stdio.h>
+#include <stdlib.h>
+
 
 static struct option long_options[] = {
     {"cpu", required_argument, 0, 'c'},
@@ -19,16 +16,18 @@ static char * short_options = "d";
 
 
 static int start_opts_parser(struct aucont_parser* parser, void * data, int ch, int index) {
-    unsigned char ip[4];
+    struct aucont_start_args * args = data;
     switch(ch) {
         case 'c':
-            printf("cpu set to %d\n", atoi(aucont_next_arg()));
+            args->cpu_perc = atoi(aucont_next_arg());
+            printf("cpu set to %d\n", args->cpu_perc);
             break;
         case 'n':
-            sscanf(aucont_next_arg(), "%d.%d.%d.%d", ip, ip + 1, ip + 2, ip + 3);
-            printf("ip %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+            sscanf(aucont_next_arg(), "%hhu.%hhu.%hhu.%hhu", args->net, args->net + 1, args->net + 2, args->net + 3);
+            printf("ip %d.%d.%d.%d\n", args->net[0], args->net[1], args->net[2], args->net[3]);
             break;
         case 'd':
+            args->daemonize = 1;
             printf("will daemon\n");
             break;
         default:
@@ -44,8 +43,10 @@ int main(int argc, char** argv) {
         .opts = long_options,
         .optstring = short_options
     };
-    int ret = aucont_parse_args(&argc, &argv, &parser, NULL);
-    for(int i = 0; i < argc; i++) {
-        printf("SKIPPED %s\n", argv[i]);
-    }
+    struct aucont_start_args start_args;
+
+    int ret = aucont_parse_args(&argc, &argv, &parser, &start_args);
+
+    start_args.forward_argv = argv;
+    start_args.forward_argc = argc;
 }

@@ -1,20 +1,27 @@
 #include "argparse.h"
+#include <stdio.h>
 #include <unistd.h>
 
-typedef int (*check_opt_f)(void*, int);
-
-int aucont_parse_args(int argc, char **argv, const char *optstring,
-        check_opt_f checker, void *filling_data) {
+int aucont_parse_args(int *argc, char ***argv,
+        struct aucont_parser *parser, void * data) {
     int ch;
+    int index;
+    int ret = CHECKER_OK;
 
-    if (!checker)
-        return 1;
+    if (!parser->checker)
+        return CHECKER_FAIL;
 
-    while ((ch = getopt(argc, argv, optstring)) != -1) {
-        if (checker(filling_data, ch)) {
-            return -1;
+    opterr = 0;
+    while ((ch = getopt_long(*argc, *argv, parser->optstring, parser->opts, &index)) != -1) {
+        ret = parser->checker(parser, data, ch, index);
+        if (ret != CHECKER_OK) {
+            optind--;
+            goto out;
         }
     }
 
-    return 0;
+out:
+    *argc -= optind;
+    *argv += optind;
+    return ret;
 }

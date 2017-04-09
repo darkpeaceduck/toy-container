@@ -11,7 +11,7 @@ STOP=$(BIN_DIR)/aucont_stop
 LIST=$(BIN_DIR)/aucont_list
 EXEC=$(BIN_DIR)/aucont_exec
 
-DEPS_SRC=$(SRC_DIR)/argparse.c
+DEPS_SRC=$(SRC_DIR)/argparse.c $(SRC_DIR)/log.c
 DEPS_OBJS=$(DEPS_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 START_DEPS=

@@ -31,6 +31,7 @@ void journal_remove_id(const char * journal_location, pid_t id) {
 }
 
 void journal_print_ids(const char * journal_location) {
+    journal_check_existiting(journal_location);
     char * buf = malloc(strlen(journal_location) + 100);
     buf[0] = 0;
     sprintf(buf, "ls -1 %s", journal_location);

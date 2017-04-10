@@ -13,6 +13,7 @@
 #include "log.h"
 #include "daemon.h"
 #include "journal.h"
+#include "user_ns.h"
 
 #define STACK_SIZE 1024*1024
 #define ENGINE_WORKDIR "/etc/aucont"
@@ -32,6 +33,10 @@ static void container_cleanup(pid_t pid) {
 
 
 static int child_body(void * __arg) {
+    /*sleep while mapping changing in host */
+    sleep(2);
+
+
     LOG(LOG_DEBUG, "entered child body");
 
     struct child_args * arg = __arg;
@@ -74,12 +79,18 @@ static pid_t born_child(struct aucont_start_args * args) {
     return ret;
 }
 
-void check_await(struct aucont_start_args * args, pid_t pid) {
+static void check_await(struct aucont_start_args * args, pid_t pid) {
     if (!args->daemonize) {
        int status;
        waitpid(pid, &status, 0);
        container_cleanup(pid);
    }
+}
+
+static void temporary_host_setup_ns(pid_t pid) {
+    uid_t uid = getuid();
+    gid_t gid = getgid();
+    user_ns_change_mapping(pid, 0, 0, uid, gid);
 }
 
 int aucont_start(struct aucont_start_args * args) {
@@ -90,6 +101,7 @@ int aucont_start(struct aucont_start_args * args) {
     }
     printf("%d\n", child_pid);
 
+    temporary_host_setup_ns(child_pid);
     journal_add_id(ENGINE_WORKDIR, child_pid);
     check_await(args, child_pid);
     return 0;

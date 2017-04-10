@@ -19,5 +19,9 @@ struct aucont_stop_args {
     int sig;
 };
 
+struct aucont_list_args {
+};
+
 int aucont_start(struct aucont_start_args * args);
 int aucont_stop(struct aucont_stop_args * args);
+int aucont_list(struct aucont_list_args *args);

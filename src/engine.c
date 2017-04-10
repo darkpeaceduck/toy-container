@@ -10,8 +10,10 @@
 #include "common_ns.h"
 #include "log.h"
 #include "daemon.h"
+#include "journal.h"
 
 #define STACK_SIZE 1024*1024
+#define ENGINE_WORKDIR "/etc/aucont"
 
 char child_stack[STACK_SIZE];
 
@@ -55,6 +57,7 @@ static pid_t born_child(struct aucont_start_args * args) {
 
     child_arg->exec_filename = args->cmd_filename;
     child_arg->exec_argv = args->forward_argv;
+    child_arg->daemonize = args->daemonize;
     ns_prepare(&child_arg->ns_arg, ALL_NS);
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
     return ret;
@@ -66,6 +69,7 @@ int aucont_start(struct aucont_start_args * args) {
         LOG(LOG_DEBUG, "failed to clone child with errno = %s", strerror(errno));
         return 1;
     }
+    journal_add_id(ENGINE_WORKDIR, child_pid);
     printf("%d\n", child_pid);
     return 0;
 }
@@ -73,4 +77,9 @@ int aucont_start(struct aucont_start_args * args) {
 int aucont_stop(struct aucont_stop_args * args) {
     LOG(LOG_DEBUG, "stopping daemon %d with sig %d", args->pid, args->sig);
     stop_daemon(args->pid, args->sig);
+    journal_remove_id(ENGINE_WORKDIR, args->pid);
+}
+
+int aucont_list(struct aucont_list_args *args) {
+    journal_print_ids(ENGINE_WORKDIR);
 }

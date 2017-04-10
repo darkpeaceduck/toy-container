@@ -44,6 +44,7 @@ static int child_body(void * __arg) {
     ns_setup(&arg->ns_arg);
     free(arg);
 
+    journal_add_id(ENGINE_WORKDIR, old_pid);
     execv(filename, argv);
     return 0;
 }
@@ -66,7 +67,7 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->exec_filename = args->cmd_filename;
     child_arg->exec_argv = args->forward_argv;
     child_arg->daemonize = args->daemonize;
-    ns_prepare(&child_arg->ns_arg, ALL_NS);
+    ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path);
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
     return ret;
 }
@@ -85,7 +86,6 @@ int aucont_start(struct aucont_start_args * args) {
         LOG(LOG_DEBUG, "failed to clone child with errno = %s", strerror(errno));
         return 1;
     }
-    journal_add_id(ENGINE_WORKDIR, child_pid);
     printf("%d\n", child_pid);
     check_await(args, child_pid);
     return 0;

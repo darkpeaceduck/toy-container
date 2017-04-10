@@ -52,12 +52,8 @@ int mount_ns_jump(pid_t pid) {
 
     sprintf(buf, "/proc/%d/ns/mnt", pid);
     fd = open(buf, O_RDONLY);
-    if (fd == -1) {
-        LOG(LOG_NULL, "BLYAD NAHUY");
+    if (fd == -1)
         return 1;
-    }
-    if (setns(fd, CLONE_NEWNS)) {
-        LOG(LOG_NULL, "SUKA NAHUY!!!");
-    }
+    setns(fd, CLONE_NEWNS);
     return 0;
 }

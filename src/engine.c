@@ -42,7 +42,7 @@ static int child_body(void * __arg) {
 
     ns_setup(&arg->ns_arg);
     if (daemon) {
-        LOG(LOG_NULL, "becoming daemon");
+        LOG(LOG_DEBUG, "becoming daemon");
         become_daemon(old_pid);
     }
     free(arg);
@@ -71,9 +71,6 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->daemonize = args->daemonize;
     ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path);
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
-    if (ret != -1) {
-        sleep(3);
-    }
     return ret;
 }
 
@@ -93,9 +90,6 @@ int aucont_start(struct aucont_start_args * args) {
     }
     printf("%d\n", child_pid);
 
-//    char buf[100];
-//    sprintf(buf, "ls /proc/%d/ns", child_pid);
-//    system(buf);
     journal_add_id(ENGINE_WORKDIR, child_pid);
     check_await(args, child_pid);
     return 0;

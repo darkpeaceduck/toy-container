@@ -24,7 +24,6 @@ int utc_ns_jump(pid_t pid) {
     sprintf(buf, "/proc/%d/ns/uts", pid);
     fd = open(buf, O_RDONLY);
     if (fd == -1){
-        LOG(LOG_NULL, "I ZDES TOZHEEEEEEEEEEEEEEEEEEEEEE %s %s", buf, strerror(errno));
         return 1;
     }
     setns(fd, CLONE_NEWUTS);

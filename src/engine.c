@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <time.h>
 #include "engine.h"
 #include "utc_ns.h"
 #include "common_ns.h"
@@ -39,12 +40,13 @@ static int child_body(void * __arg) {
     pid_t old_pid = getpid();
     int daemon = arg->daemonize;
 
-    if (daemon)
-        become_daemon();
     ns_setup(&arg->ns_arg);
+    if (daemon) {
+        LOG(LOG_NULL, "becoming daemon");
+        become_daemon(old_pid);
+    }
     free(arg);
 
-    journal_add_id(ENGINE_WORKDIR, old_pid);
     execv(filename, argv);
     return 0;
 }
@@ -57,7 +59,7 @@ static int enter_child_body(struct child_args * arg, int clone_flags) {
 }
 
 static int produce_clone_flags(struct child_args * arg) {
-    return arg->ns_arg.ns_flags;
+    return arg->ns_arg.ns_flags | SIGCHLD;
 }
 
 static pid_t born_child(struct aucont_start_args * args) {
@@ -69,6 +71,9 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->daemonize = args->daemonize;
     ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path);
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
+    if (ret != -1) {
+        sleep(3);
+    }
     return ret;
 }
 
@@ -87,6 +92,11 @@ int aucont_start(struct aucont_start_args * args) {
         return 1;
     }
     printf("%d\n", child_pid);
+
+//    char buf[100];
+//    sprintf(buf, "ls /proc/%d/ns", child_pid);
+//    system(buf);
+    journal_add_id(ENGINE_WORKDIR, child_pid);
     check_await(args, child_pid);
     return 0;
 }

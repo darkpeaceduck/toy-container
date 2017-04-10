@@ -6,7 +6,7 @@
 #define NS_OK 0
 
 //#define ALL_NS (CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWPID | CLONE_NEWUSER)
-#define ALL_NS (CLONE_NEWUTS | 0)
+#define ALL_NS (CLONE_NEWUTS | CLONE_NEWNS)
 struct child_ns_arg {
     int (*utc_setup)(const char *hostname);
     int (*mount_setup)(const char *image_location);

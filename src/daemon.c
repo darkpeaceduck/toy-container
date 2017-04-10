@@ -1,8 +1,10 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "daemon.h"
-pid_t become_daemon() {
+#include "log.h"
+pid_t become_daemon(pid_t pid) {
     pid_t sid = setsid();
+    signal (SIGHUP, SIG_IGN);
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);

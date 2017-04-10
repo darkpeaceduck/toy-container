@@ -9,6 +9,7 @@
 #include "utc_ns.h"
 #include "common_ns.h"
 #include "log.h"
+#include "daemon.h"
 
 #define STACK_SIZE 1024*1024
 
@@ -18,6 +19,7 @@ struct child_args {
     struct child_ns_arg ns_arg;
     const char *exec_filename;
     char **exec_argv;
+    int daemonize;
 };
 
 
@@ -28,6 +30,8 @@ static int child_body(void * __arg) {
     const char *filename = arg->exec_filename;
     char **argv = arg->exec_argv;
 
+    if (arg->daemonize)
+        become_daemon();
     ns_setup(&arg->ns_arg);
     free(arg);
     execv(filename, argv);
@@ -64,4 +68,9 @@ int aucont_start(struct aucont_start_args * args) {
     }
     printf("%d\n", child_pid);
     return 0;
+}
+
+int aucont_stop(struct aucont_stop_args * args) {
+    LOG(LOG_DEBUG, "stopping daemon %d with sig %d", args->pid, args->sig);
+    stop_daemon(args->pid, args->sig);
 }

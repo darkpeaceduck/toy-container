@@ -5,8 +5,8 @@
 #define NS_FAIL 1
 #define NS_OK 0
 
+//#define ALL_NS (CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWPID | CLONE_NEWUSER)
 #define ALL_NS (CLONE_NEWUTS | 0)
-
 struct child_ns_arg {
     int (*utc_setup)(const char *hostname);
 

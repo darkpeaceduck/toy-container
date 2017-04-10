@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 static struct option long_options[] = {
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
         .optstring = short_options
     };
     struct aucont_start_args start_args;
+    memset(&start_args, 0, sizeof(start_args));
 
     int ret = aucont_parse_args(&argc, &argv, &parser, &start_args);
     if (ret == CHECKER_FAIL || argc < 2) {

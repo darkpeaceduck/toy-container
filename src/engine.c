@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/wait.h>
 #include "engine.h"
 #include "utc_ns.h"
 #include "common_ns.h"
@@ -24,6 +25,10 @@ struct child_args {
     int daemonize;
 };
 
+static void container_cleanup(pid_t pid) {
+    journal_remove_id(ENGINE_WORKDIR, pid);
+}
+
 
 static int child_body(void * __arg) {
     LOG(LOG_DEBUG, "entered child body");
@@ -31,12 +36,28 @@ static int child_body(void * __arg) {
     struct child_args * arg = __arg;
     const char *filename = arg->exec_filename;
     char **argv = arg->exec_argv;
+    pid_t old_pid = getpid();
+    int daemon = arg->daemonize;
 
-    if (arg->daemonize)
+    if (daemon)
         become_daemon();
     ns_setup(&arg->ns_arg);
     free(arg);
-    execv(filename, argv);
+
+    journal_add_id(ENGINE_WORKDIR, old_pid);
+
+    if (!daemon) {
+        pid_t fork_pid = fork();
+        if (!fork_pid) {
+            execv(filename, argv);
+        } else {
+            int status;
+            waitpid(fork_pid, &status, 0);
+            container_cleanup(old_pid);
+        }
+    } else {
+        execv(filename, argv);
+    }
     return 0;
 }
 
@@ -69,7 +90,6 @@ int aucont_start(struct aucont_start_args * args) {
         LOG(LOG_DEBUG, "failed to clone child with errno = %s", strerror(errno));
         return 1;
     }
-    journal_add_id(ENGINE_WORKDIR, child_pid);
     printf("%d\n", child_pid);
     return 0;
 }
@@ -77,7 +97,7 @@ int aucont_start(struct aucont_start_args * args) {
 int aucont_stop(struct aucont_stop_args * args) {
     LOG(LOG_DEBUG, "stopping daemon %d with sig %d", args->pid, args->sig);
     stop_daemon(args->pid, args->sig);
-    journal_remove_id(ENGINE_WORKDIR, args->pid);
+    container_cleanup(args->pid);
 }
 
 int aucont_list(struct aucont_list_args *args) {

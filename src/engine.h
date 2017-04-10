@@ -22,6 +22,14 @@ struct aucont_stop_args {
 struct aucont_list_args {
 };
 
+struct aucont_exec_args {
+    pid_t pid;
+    const char * cmd_filename;
+    int forward_argc;
+    char **forward_argv;
+};
+
 int aucont_start(struct aucont_start_args * args);
 int aucont_stop(struct aucont_stop_args * args);
 int aucont_list(struct aucont_list_args *args);
+int aucont_exec(struct aucont_exec_args *args);

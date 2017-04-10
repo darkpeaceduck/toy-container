@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-
+#include <sched.h>
 #include <string.h>
 #include "common_ns.h"
 #include "utc_ns.h"
@@ -24,5 +24,11 @@ void ns_prepare(struct child_ns_arg * arg, int flags) {
 
 void ns_setup(struct child_ns_arg * arg) {
     RUN(arg->utc_setup, arg->hostname);
+}
+
+void ns_jump(pid_t pid, int flag) {
+    if (IS_FLAG_SET(flag, CLONE_NEWUTS)) {
+        utc_ns_jump(pid);
+    }
 }
 

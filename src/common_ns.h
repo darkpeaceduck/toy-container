@@ -16,3 +16,4 @@ struct child_ns_arg {
 
 void ns_prepare(struct child_ns_arg * arg, int flags);
 void ns_setup(struct child_ns_arg * arg);
+void ns_jump(pid_t pid, int flag);

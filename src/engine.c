@@ -83,3 +83,8 @@ int aucont_stop(struct aucont_stop_args * args) {
 int aucont_list(struct aucont_list_args *args) {
     journal_print_ids(ENGINE_WORKDIR);
 }
+
+int aucont_exec(struct aucont_exec_args *args) {
+    ns_jump(args->pid, ALL_NS);
+    execv(args->cmd_filename, args->forward_argv);
+}

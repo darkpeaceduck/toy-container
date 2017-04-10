@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <string.h>
+
 #include "common_ns.h"
 #include "utc_ns.h"
 

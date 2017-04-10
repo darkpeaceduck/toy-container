@@ -20,15 +20,12 @@ static int start_opts_parser(struct aucont_parser* parser, void * data, int ch, 
     switch(ch) {
         case 'c':
             args->cpu_perc = atoi(aucont_next_arg());
-            printf("cpu set to %d\n", args->cpu_perc);
             break;
         case 'n':
             sscanf(aucont_next_arg(), "%hhu.%hhu.%hhu.%hhu", args->net, args->net + 1, args->net + 2, args->net + 3);
-            printf("ip %d.%d.%d.%d\n", args->net[0], args->net[1], args->net[2], args->net[3]);
             break;
         case 'd':
             args->daemonize = 1;
-            printf("will daemon\n");
             break;
         default:
             return CHECKER_SKIP;
@@ -38,6 +35,8 @@ static int start_opts_parser(struct aucont_parser* parser, void * data, int ch, 
 
 
 int main(int argc, char** argv) {
+
+//    set_log_level(LOG_DEBUG);
     struct aucont_parser parser = {
         .checker = start_opts_parser,
         .opts = long_options,
@@ -46,7 +45,19 @@ int main(int argc, char** argv) {
     struct aucont_start_args start_args;
 
     int ret = aucont_parse_args(&argc, &argv, &parser, &start_args);
+    if (ret == CHECKER_FAIL || argc < 2) {
+        LOG(LOG_NULL, "wrong args");
+        return 1;
+    }
 
-    start_args.forward_argv = argv;
-    start_args.forward_argc = argc;
+    start_args.image_path = argv[0];
+    start_args.cmd_filename = (const char *)argv[1];
+
+    //assume, that argv[0] is passed, argv[1] is first significant
+    start_args.forward_argv = argv + 1;
+    start_args.forward_argc = argc - 1;
+
+    LOG(LOG_DEBUG, "cmd %s, image %s", start_args.cmd_filename, start_args.image_path);
+    ret = aucont_start(&start_args);
+    return (ret ? 1 : 0);
 }

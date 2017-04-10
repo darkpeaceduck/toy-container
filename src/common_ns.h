@@ -1,6 +1,6 @@
 #pragma once
+#define _GNU_SOURCE
 #include <sched.h>
-#include <unistd.h>
 
 #define NS_FAIL 1
 #define NS_OK 0
@@ -13,3 +13,6 @@ struct child_ns_arg {
     const char *hostname;
     int ns_flags;
 };
+
+void ns_prepare(struct child_ns_arg * arg, int flags);
+void ns_setup(struct child_ns_arg * arg);

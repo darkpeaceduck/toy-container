@@ -1,5 +1,8 @@
-#include "utc_ns.h"
+#define _GNU_SOURCE
+
+#include <string.h>
 #include "common_ns.h"
+#include "utc_ns.h"
 
 #define IS_FLAG_SET(a, flag) (a & flag)
 #define RUN(f, ...) do { \

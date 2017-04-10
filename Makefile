@@ -1,6 +1,6 @@
 CC ?= gcc
 
-CFLAGS=
+CFLAGS=-Werror
 
 SRC_DIR=src
 BIN_DIR=bin
@@ -11,7 +11,8 @@ STOP=$(BIN_DIR)/aucont_stop
 LIST=$(BIN_DIR)/aucont_list
 EXEC=$(BIN_DIR)/aucont_exec
 
-DEPS_SRC=$(SRC_DIR)/argparse.c $(SRC_DIR)/log.c $(SRC_DIR)/engine.c
+DEPS_SRC=$(SRC_DIR)/argparse.c $(SRC_DIR)/log.c $(SRC_DIR)/engine.c\
+	$(SRC_DIR)/common_ns.c $(SRC_DIR)/utc_ns.c 
 DEPS_OBJS=$(DEPS_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 START_DEPS=

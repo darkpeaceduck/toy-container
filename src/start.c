@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
     start_args.forward_argv = argv + 1;
     start_args.forward_argc = argc - 1;
 
+//    LOG(LOG_NULL, "DAEMONIZE %d", start_args.daemonize);
     LOG(LOG_DEBUG, "cmd %s, image %s", start_args.cmd_filename, start_args.image_path);
     ret = aucont_start(&start_args);
     return (ret ? 1 : 0);

@@ -44,20 +44,7 @@ static int child_body(void * __arg) {
     ns_setup(&arg->ns_arg);
     free(arg);
 
-    journal_add_id(ENGINE_WORKDIR, old_pid);
-
-    if (!daemon) {
-        pid_t fork_pid = fork();
-        if (!fork_pid) {
-            execv(filename, argv);
-        } else {
-            int status;
-            waitpid(fork_pid, &status, 0);
-            container_cleanup(old_pid);
-        }
-    } else {
-        execv(filename, argv);
-    }
+    execv(filename, argv);
     return 0;
 }
 
@@ -84,13 +71,23 @@ static pid_t born_child(struct aucont_start_args * args) {
     return ret;
 }
 
+void check_await(struct aucont_start_args * args, pid_t pid) {
+    if (!args->daemonize) {
+       int status;
+       waitpid(pid, &status, 0);
+       container_cleanup(pid);
+   }
+}
+
 int aucont_start(struct aucont_start_args * args) {
     pid_t child_pid = born_child(args);
     if (child_pid == -1) {
         LOG(LOG_DEBUG, "failed to clone child with errno = %s", strerror(errno));
         return 1;
     }
+    journal_add_id(ENGINE_WORKDIR, child_pid);
     printf("%d\n", child_pid);
+    check_await(args, child_pid);
     return 0;
 }
 

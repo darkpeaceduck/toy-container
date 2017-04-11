@@ -33,9 +33,6 @@ static void container_cleanup(pid_t pid) {
 
 
 static int child_body(void * __arg) {
-    /*sleep while mapping changing in host */
-    sleep(2);
-
     LOG(LOG_DEBUG, "entered child body with uid %d", getuid());
 
     struct child_args * arg = __arg;
@@ -77,7 +74,8 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->exec_argv = args->forward_argv;
     child_arg->daemonize = args->daemonize;
 
-    ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path);
+    if (ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path))
+        return -1;
 
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
 

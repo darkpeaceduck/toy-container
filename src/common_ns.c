@@ -27,7 +27,7 @@
 #define CONTAINER_HOSTNAME "container"
 
 
-void ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location) {
+int ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location) {
     memset(arg, 0, sizeof(*arg));
     arg->hostname = CONTAINER_HOSTNAME;
     arg->ns_flags = flags;
@@ -35,10 +35,24 @@ void ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location
     arg->utc_setup = setup_utc_ns;
     arg->mount_setup = mount_image;
     arg->user_setup = user_ns_setup;
+
+    if (pipe(arg->sync_pipe) == -1)
+        return 1;
+
+    return 0;
 }
 
 int ns_setup(struct child_ns_arg * arg) {
+    char ch;
     int ret = 0;
+
+    close(arg->sync_pipe[1]);
+    if (read(arg->sync_pipe[0], &ch, 1) != 0) {
+        LOG(LOG_NULL, "Failure in child: read from pipe returned != 0\n");
+        ret = 1;
+        goto out;
+    }
+
     RUNE(ret, arg->ns_flags, CLONE_NEWUSER, arg->user_setup);
     if (ret)
        goto out;
@@ -95,11 +109,14 @@ out:
 }
 
 int ns_post_host(struct child_ns_arg * arg, pid_t pid) {
+    int ret = 0;
     if (IS_FLAG_SET(arg->ns_flags, CLONE_NEWUSER)) {
         uid_t uid = geteuid();
         gid_t gid = getegid();
-        return user_ns_change_mapping(pid, 0, 0, uid, gid);
+        ret = user_ns_change_mapping(pid, 0, 0, uid, gid);
     }
-    return 0;
+
+    close(arg->sync_pipe[1]);
+    return ret;
 }
 

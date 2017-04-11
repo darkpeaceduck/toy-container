@@ -38,14 +38,14 @@ void ns_setup(struct child_ns_arg * arg) {
 }
 
 void ns_jump(pid_t pid, int flag) {
-    if (IS_FLAG_SET(flag, CLONE_NEWUSER)) {
-        user_ns_jump(pid);
-    }
     if (IS_FLAG_SET(flag, CLONE_NEWUTS)) {
         utc_ns_jump(pid);
     }
     if (IS_FLAG_SET(flag, CLONE_NEWNS)) {
         mount_ns_jump(pid);
+    }
+    if (IS_FLAG_SET(flag, CLONE_NEWUSER)) {
+        user_ns_jump(pid);
     }
 }
 

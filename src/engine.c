@@ -37,7 +37,7 @@ static int child_body(void * __arg) {
     sleep(2);
 
 
-    LOG(LOG_DEBUG, "entered child body");
+    LOG(LOG_DEBUG, "entered child body with uid %d", getuid());
 
     struct child_args * arg = __arg;
     const char *filename = arg->exec_filename;
@@ -88,9 +88,11 @@ static void check_await(struct aucont_start_args * args, pid_t pid) {
 }
 
 static void temporary_host_setup_ns(pid_t pid) {
-    uid_t uid = getuid();
-    gid_t gid = getgid();
-    user_ns_change_mapping(pid, 0, 0, uid, gid);
+    if (ALL_NS & CLONE_NEWUSER) {
+        uid_t uid = geteuid();
+        gid_t gid = getegid();
+        user_ns_change_mapping(pid, 0, 0, uid, gid);
+    }
 }
 
 int aucont_start(struct aucont_start_args * args) {
@@ -119,5 +121,8 @@ int aucont_list(struct aucont_list_args *args) {
 
 int aucont_exec(struct aucont_exec_args *args) {
     ns_jump(args->pid, ALL_NS);
-    execv(args->cmd_filename, args->forward_argv);
+    if (execv(args->cmd_filename, args->forward_argv)) {
+        fprintf(stderr, "DIE BITCH %s", strerror(errno));
+        exit(2);
+    }
 }

@@ -7,8 +7,8 @@
 #include <fcntl.h>
 
 int user_ns_setup() {
-    setuid(0);
-    setgid(0);
+//    seteuid(1000);
+//    setegid(1000);
 }
 
 
@@ -30,4 +30,5 @@ int user_ns_jump(pid_t pid) {
         return 1;
     }
     setns(fd, CLONE_NEWUSER);
+    user_ns_setup();
 }

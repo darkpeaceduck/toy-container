@@ -94,11 +94,11 @@ out:
     return ret;
 }
 
-int ns_post_host(struct child_ns_arg * arg) {
+int ns_post_host(struct child_ns_arg * arg, pid_t pid) {
     if (IS_FLAG_SET(arg->ns_flags, CLONE_NEWUSER)) {
         uid_t uid = geteuid();
         gid_t gid = getegid();
-        return user_ns_change_mapping(arg->final_pid, 0, 0, uid, gid);
+        return user_ns_change_mapping(pid, 0, 0, uid, gid);
     }
     return 0;
 }

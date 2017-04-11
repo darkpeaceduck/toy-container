@@ -12,5 +12,6 @@ int main(int argc, char** argv) {
     args.cmd_filename = argv[2];
     args.forward_argc = argc - 2;
     args.forward_argv = argv + 2;
-    aucont_exec(&args);
+
+    return aucont_exec(&args) ? 1 : 0;
 }

@@ -11,5 +11,5 @@ int main(int argc, char** argv) {
          .pid = atoi(argv[1]),
          .sig = atoi(argv[2])
     };
-    aucont_stop(&args);
+    return aucont_stop(&args) ? 1 : 0;
 }

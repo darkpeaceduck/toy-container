@@ -21,6 +21,6 @@ struct child_ns_arg {
 void ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location);
 int ns_setup(struct child_ns_arg * arg);
 int ns_jump(pid_t pid, int flag);
-int ns_post_host(struct child_ns_arg * arg);
+int ns_post_host(struct child_ns_arg * arg, pid_t pid);
 
 int ns_common_setns(pid_t pid, const char * label, int flag);

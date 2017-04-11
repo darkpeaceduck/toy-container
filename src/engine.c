@@ -76,6 +76,10 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->daemonize = args->daemonize;
     ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path);
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
+    if (ret != -1) {
+        child_arg->ns_arg.final_pid = ret;
+        ns_post_host(&child_arg->ns_arg);
+    }
     return ret;
 }
 
@@ -87,14 +91,6 @@ static void check_await(struct aucont_start_args * args, pid_t pid) {
    }
 }
 
-static void temporary_host_setup_ns(pid_t pid) {
-    if (ALL_NS & CLONE_NEWUSER) {
-        uid_t uid = geteuid();
-        gid_t gid = getegid();
-        user_ns_change_mapping(pid, 0, 0, uid, gid);
-    }
-}
-
 int aucont_start(struct aucont_start_args * args) {
     pid_t child_pid = born_child(args);
     if (child_pid == -1) {
@@ -103,7 +99,6 @@ int aucont_start(struct aucont_start_args * args) {
     }
     printf("%d\n", child_pid);
 
-    temporary_host_setup_ns(child_pid);
     journal_add_id(ENGINE_WORKDIR, child_pid);
     check_await(args, child_pid);
     return 0;

@@ -14,8 +14,13 @@ struct child_ns_arg {
     const char *hostname;
     int ns_flags;
     const char * image_location;
+
+    pid_t final_pid; /* host only */
 };
 
 void ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location);
-void ns_setup(struct child_ns_arg * arg);
-void ns_jump(pid_t pid, int flag);
+int ns_setup(struct child_ns_arg * arg);
+int ns_jump(pid_t pid, int flag);
+int ns_post_host(struct child_ns_arg * arg);
+
+int ns_common_setns(pid_t pid, const char * label, int flag);

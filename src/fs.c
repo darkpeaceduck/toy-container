@@ -12,6 +12,7 @@
 #include <errno.h>
 
 #include "log.h"
+#include "common_ns.h"
 
 #define OLD_ROOT_TMPMNT_PATH "/tmp"
 
@@ -33,7 +34,6 @@ static char * produce_system_path(const char * image_location, const char * type
 }
 
 static int mount_system_to_image(const char *image_location) {
-//    return 0;
     char * proc_location = produce_system_path(image_location, "proc");
     char * sys_location = produce_system_path(image_location, "sys");
     char * dev_location = produce_system_path(image_location, "dev");
@@ -45,7 +45,7 @@ static int mount_system_to_image(const char *image_location) {
         fail_msg = "mount proc failed";
         goto out;
     }
-//
+
     ret = mount("/sys", sys_location, "sys", MS_REC | MS_BIND, NULL);
     if (ret) {
         fail_msg = "mount sys failed";
@@ -107,10 +107,6 @@ int mount_image(const char *image_location) {
         fail_msg =  "umount failed (mount ns)";
     }
 
-//    ret = mount(NULL, "/proc", "/proc", 0, NULL);
-//    if (ret) {
-//        fail_msg = "failed mount proc";
-//    }
 out_free:
     free(tmp_old_location);
 out:
@@ -120,25 +116,5 @@ out:
 }
 
 int mount_ns_jump(pid_t pid) {
-    char buf[100];
-    int fd;
-    int ret = 0;
-    const char * fail_msg = 0;
-
-    sprintf(buf, "/proc/%d/ns/mnt", pid);
-    fd = open(buf, O_RDONLY);
-    if (fd == -1) {
-        ret = 1;
-        fail_msg = "failed to open mnt fd";
-        goto out;
-    }
-
-    ret = setns(fd, 0);
-    if (ret) {
-        fail_msg = "fail setns mount";
-    }
-out:
-    if (fail_msg)
-        LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
-    return ret;
+    return ns_common_setns(pid, "mnt", CLONE_NEWNS);
 }

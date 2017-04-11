@@ -18,14 +18,5 @@ int setup_utc_ns(const char * hostname) {
 }
 
 int utc_ns_jump(pid_t pid) {
-    char buf[100];
-    int fd;
-
-    sprintf(buf, "/proc/%d/ns/uts", pid);
-    fd = open(buf, O_RDONLY);
-    if (fd == -1){
-        return 1;
-    }
-    setns(fd, CLONE_NEWUTS);
-    return 0;
+    return ns_common_setns(pid, "uts", CLONE_NEWUTS);
 }

@@ -13,6 +13,7 @@
 
 #include "log.h"
 #include "common_ns.h"
+#include "cgroups.h"
 
 #define OLD_ROOT_TMPMNT_PATH "/tmp"
 
@@ -112,6 +113,9 @@ out_free:
 out:
     if (fail_msg)
         LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
+
+//    system("ls -l ls /sys/fs/cgroup/cpu/");
+//    configurate_cgroups("/tmp");
     return ret;
 }
 

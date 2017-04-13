@@ -14,6 +14,7 @@
 #include "daemon.h"
 #include "journal.h"
 #include "user_ns.h"
+#include "cgroups.h"
 
 #define STACK_SIZE 1024*1024
 #define ENGINE_WORKDIR "/etc/aucont"
@@ -22,9 +23,11 @@ char child_stack[STACK_SIZE];
 
 struct child_args {
     struct child_ns_arg ns_arg;
+    int (*configurate_cgroups)(const char * work_dir);
     const char *exec_filename;
     char **exec_argv;
     int daemonize;
+    int cpu;
 };
 
 static void container_cleanup(pid_t pid) {
@@ -43,6 +46,9 @@ static int child_body(void * __arg) {
 
     if (ns_setup(&arg->ns_arg))
         return 1;
+
+//    if (arg->cpu != -1)
+    configurate_cgroups("/sys/fs/cgroup/cpu/", arg->cpu);
 
     if (daemon) {
         LOG(LOG_DEBUG, "becoming daemon");
@@ -73,11 +79,23 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->exec_filename = args->cmd_filename;
     child_arg->exec_argv = args->forward_argv;
     child_arg->daemonize = args->daemonize;
+    child_arg->cpu = args->cpu_perc;
+//    child_arg->configurate_cgroups = configurate_cgroups;
+
+
+    if (system("chown 1000:1000 -R /sys/fs/cgroup/cpu/")) {
+        LOG(LOG_NULL, "failed chown");
+        return -1;
+    }
+
+//    system("mount -t cgroup -o cpu test ../rootfs/tmp")
 
     if (ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path))
         return -1;
 
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
+//    journal_add_id(ENGINE_WORKDIR, ret);
+//    configurate_cgroups(ret);
 
     if (ret != -1) {
         ns_post_host(&child_arg->ns_arg, ret);
@@ -121,6 +139,8 @@ int aucont_list(struct aucont_list_args *args) {
 
 int aucont_exec(struct aucont_exec_args *args) {
     if (ns_jump(args->pid, ALL_NS))
+        return 1;
+    if (jump_cgroups("/sys/fs/cgroup/cpu/"))
         return 1;
     if (execv(args->cmd_filename, args->forward_argv)) {
         return 1;

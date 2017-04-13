@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
     };
     struct aucont_start_args start_args;
     memset(&start_args, 0, sizeof(start_args));
+    start_args.cpu_perc = -1;
 
     int ret = aucont_parse_args(&argc, &argv, &parser, &start_args);
     if (ret == CHECKER_FAIL || argc < 2) {

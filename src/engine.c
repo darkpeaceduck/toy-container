@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <time.h>
 #include "engine.h"
@@ -44,11 +45,13 @@ static int child_body(void * __arg) {
     pid_t old_pid = getpid();
     int daemon = arg->daemonize;
 
+//    int fd = open("/var/run/my_netns", O_RDONLY);
+//    setns(fd, 0);
+
     if (ns_setup(&arg->ns_arg))
         return 1;
 
-//    if (arg->cpu != -1)
-    configurate_cgroups("/sys/fs/cgroup/cpu/", arg->cpu);
+//    configurate_cgroups("/tmp/huy", arg->cpu);
 
     if (daemon) {
         LOG(LOG_DEBUG, "becoming daemon");
@@ -72,8 +75,7 @@ static int produce_clone_flags(struct child_args * arg) {
     return arg->ns_arg.ns_flags | SIGCHLD;
 }
 
-static pid_t born_child(struct aucont_start_args * args) {
-    struct child_args * child_arg = malloc(sizeof(struct child_args));
+static pid_t born_child(struct child_args * child_arg, struct aucont_start_args * args) {
     pid_t ret;
 
     child_arg->exec_filename = args->cmd_filename;
@@ -82,20 +84,30 @@ static pid_t born_child(struct aucont_start_args * args) {
     child_arg->cpu = args->cpu_perc;
 //    child_arg->configurate_cgroups = configurate_cgroups;
 
+//
+//    if (system("chown 1000:1000 -R /sys/fs/cgroup/cpu/")) {
+//        LOG(LOG_NULL, "failed chown");
+//        return -1;
+//    }
 
-    if (system("chown 1000:1000 -R /sys/fs/cgroup/cpu/")) {
-        LOG(LOG_NULL, "failed chown");
-        return -1;
-    }
+//    LOG(LOG_NULL, "USER UID %d", getuid());
+//    setuid(0);
+//    system("mkdir -p ../rootfs/tmp/huy");
+//    system("mount -t cgroup -o cpu,cpuacct test ../rootfs/tmp/huy");
+//
+//    if (system("chown 1000:1000 -R ../rootfs/tmp/huy")) {
+//            LOG(LOG_NULL, "failed chown");
+//            return -1;
+//        }
 
-//    system("mount -t cgroup -o cpu test ../rootfs/tmp")
+//    seteuid(1000);
 
-    if (ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path))
+//    system("../aucont/scripts/setup_cgroups.sh");
+
+    if (ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path, args->net_set ? args->net : NULL))
         return -1;
 
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
-//    journal_add_id(ENGINE_WORKDIR, ret);
-//    configurate_cgroups(ret);
 
     if (ret != -1) {
         ns_post_host(&child_arg->ns_arg, ret);
@@ -113,14 +125,18 @@ static void check_await(struct aucont_start_args * args, pid_t pid) {
 }
 
 int aucont_start(struct aucont_start_args * args) {
-    pid_t child_pid = born_child(args);
+    struct child_args * child_arg = malloc(sizeof(struct child_args));
+    memset(child_arg, 0, sizeof(*child_arg));
+    pid_t child_pid = born_child(child_arg, args);
     if (child_pid == -1) {
         LOG(LOG_NULL, "failed to start(born child) with errno = %s", strerror(errno));
         return 1;
     }
+    journal_add_id(ENGINE_WORKDIR, child_pid);
+    journal_put_netns_name(journal_produce_workdir(ENGINE_WORKDIR, child_pid), child_arg->ns_arg.net_ns_name);
+
     printf("%d\n", child_pid);
 
-    journal_add_id(ENGINE_WORKDIR, child_pid);
     check_await(args, child_pid);
     return 0;
 }
@@ -138,10 +154,19 @@ int aucont_list(struct aucont_list_args *args) {
 }
 
 int aucont_exec(struct aucont_exec_args *args) {
-    if (ns_jump(args->pid, ALL_NS))
-        return 1;
-    if (jump_cgroups("/sys/fs/cgroup/cpu/"))
-        return 1;
+    char net_ns[100];
+    journal_get_netns_name(journal_produce_workdir(ENGINE_WORKDIR, args->pid), net_ns);
+    net_ns_jump(net_ns, 0);
+//    int fd = open("/var/run/netns/my_netns", O_RDONLY);
+//    setns(fd, CLONE_NEWNET);
+//
+//    if (ns_jump(args->pid, ALL_NS))
+//        return 1;
+//    if (jump_cgroups("/tmp/huy"))
+//        return 1;
+
+//    system("ping 10.0.0.2");
+//    LOG(LOG_NULL, "ls -l /bin/ping");
     if (execv(args->cmd_filename, args->forward_argv)) {
         return 1;
     }

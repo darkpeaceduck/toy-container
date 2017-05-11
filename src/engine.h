@@ -5,7 +5,8 @@
 struct aucont_start_args {
     int daemonize;
     int cpu_perc;
-    unsigned char net[4];
+    char net[100];
+    int net_set;
 
     char * image_path;
     const char * cmd_filename;

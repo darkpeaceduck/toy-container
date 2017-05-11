@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "journal.h"
 
+#define NET_NS_NAME "name"
+#define MAX_NS_NAME 1000
+
 static void journal_check_existiting(const char * journal_location) {
     const char *cmd = "mkdir -p ";
     char * buf = malloc(strlen(cmd) + strlen(journal_location) + 10);
@@ -18,6 +21,30 @@ char* journal_produce_workdir(const char * journal_location, pid_t id) {
     buf[0] = 0;
     sprintf(buf, "%s/%d", journal_location, id);
     return buf;
+}
+
+void journal_put_netns_name(const char * journal_location, const char * name) {
+    char * buf = malloc(strlen(journal_location) + strlen(name) + 100);
+    FILE * f ;
+
+    buf[0] = 0;
+    sprintf(buf, "%s/%s", journal_location, NET_NS_NAME);
+    f = fopen(buf, "w");
+    fputs(name, f);
+    fclose(f);
+    free(buf);
+}
+
+void journal_get_netns_name(const char * journal_location, char * name) {
+    char * buf = malloc(strlen(journal_location) + strlen(name) + 100);
+    FILE * f ;
+
+    buf[0] = 0;
+    sprintf(buf, "%s/%s", journal_location, NET_NS_NAME);
+    f = fopen(buf, "r");
+    fgets(name, MAX_NS_NAME, f);
+    fclose(f);
+    free(buf);
 }
 
 void journal_add_id(const char * journal_location, pid_t id) {

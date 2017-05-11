@@ -20,13 +20,13 @@ int user_ns_change_mapping(pid_t pid, uid_t new_uid, gid_t new_gid, uid_t old_ui
     char buf[100];
     int ret = 0;
 
-    sprintf(buf, "echo %d %d 1 > /proc/%d/uid_map", new_uid, old_uid, pid);
+    sprintf(buf, "echo %d %d 1 >> /proc/%d/uid_map", new_uid, old_uid, pid);
 
     ret = system(buf);
     if (ret)
         goto out;
 
-    sprintf(buf, "echo %d %d 1 > /proc/%d/gid_map", new_gid, old_gid, pid);
+    sprintf(buf, "echo %d %d 1 >> /proc/%d/gid_map", new_gid, old_gid, pid);
 
     ret = system(buf);
 out:

@@ -23,7 +23,8 @@ static int start_opts_parser(struct aucont_parser* parser, void * data, int ch, 
             args->cpu_perc = atoi(aucont_next_arg());
             break;
         case 'n':
-            sscanf(aucont_next_arg(), "%hhu.%hhu.%hhu.%hhu", args->net, args->net + 1, args->net + 2, args->net + 3);
+            strcpy(args->net, aucont_next_arg());
+            args->net_set = 1;
             break;
         case 'd':
             args->daemonize = 1;

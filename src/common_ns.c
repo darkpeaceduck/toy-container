@@ -27,7 +27,17 @@
 #define CONTAINER_HOSTNAME "container"
 
 
-int ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location) {
+static int ns_prepare_setup(struct child_ns_arg * arg) {
+    int ret = 0;
+    RUNE(ret, arg->ns_flags, CLONE_NEWNET, net_ns_setup, arg->net_ns_name, arg->src_host, arg->dst_host);
+    if (ret)
+       goto out;
+    RUNE(ret, arg->ns_flags, CLONE_NEWNET, net_ns_jump, arg->net_ns_name, 0);
+out:
+    return ret;
+}
+
+int ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location, char * net) {
     memset(arg, 0, sizeof(*arg));
     arg->hostname = CONTAINER_HOSTNAME;
     arg->ns_flags = flags;
@@ -39,7 +49,15 @@ int ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location)
     if (pipe(arg->sync_pipe) == -1)
         return 1;
 
-    return 0;
+    if (net) {
+        int oct[4];
+        scanf(net, "%d.%d.%d.%d", oct[0], oct[1], oct[2], oct[3]);
+
+        strcpy(arg->src_host, net);
+        sprintf(arg->dst_host, "%d.%d.%d.%d", oct[0], oct[1], oct[2], oct[3] + 1);
+    }
+
+    return ns_prepare_setup(arg);
 }
 
 int ns_setup(struct child_ns_arg * arg) {
@@ -104,6 +122,8 @@ int ns_jump(pid_t pid, int flag) {
         goto out;
 
     RUNE(ret, flag, CLONE_NEWUSER, user_ns_jump, pid);
+    if (ret)
+            goto out;
 out:
     return ret;
 }

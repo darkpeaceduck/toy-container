@@ -114,8 +114,6 @@ out:
     if (fail_msg)
         LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
 
-//    system("ls -l ls /sys/fs/cgroup/cpu/");
-//    configurate_cgroups("/tmp");
     return ret;
 }
 

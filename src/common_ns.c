@@ -65,6 +65,7 @@ int ns_setup(struct child_ns_arg * arg) {
         ret = 1;
         goto out;
     }
+    close(arg->sync_pipe[0]);
 
     RUNE(ret, arg->ns_flags, CLONE_NEWUSER, arg->user_setup);
     if (ret)
@@ -101,6 +102,8 @@ int ns_common_setns(pid_t pid, const char * label, int flag) {
         fail_msg = "(commono setns) fail setns";
     }
 out:
+    if (fd != -1)
+        close(fd);
     if (fail_msg)
         LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
     return ret;

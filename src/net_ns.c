@@ -9,7 +9,6 @@
 #include "common_ns.h"
 
 #define SCRIPT_PATH "../aucont/scripts/setup_netns.sh"
-#define RAND_SUFFIX_LEN 10
 #define ENV_PATH_PREFIX "/var/run/netns/"
 
 

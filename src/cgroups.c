@@ -8,7 +8,7 @@
 
 //int preconfigurate_cgroups(const char * work_dir)
 
-int configurate_cgroups(const char * work_dir, int cpu) {
+int configurate_cgroups(const char * work_dir, int cpu, pid_t pid) {
     char buf[100];
     sprintf(buf, "mkdir -p %s/cont_suka", work_dir);
 //    sprintf(buf, "../aucont/scripts/setup_cgroups.sh %s", work_dir);
@@ -17,7 +17,7 @@ int configurate_cgroups(const char * work_dir, int cpu) {
         LOG(LOG_NULL, "system ret %d", ret);
         goto out;
     }
-    pid_t pid = getpid();
+//    pid_t pid = getpid();
     sprintf(buf, "echo %d > %s/cont_suka/tasks", pid, work_dir);
 
     ret = system(buf);
@@ -25,6 +25,8 @@ int configurate_cgroups(const char * work_dir, int cpu) {
         LOG(LOG_NULL, "tasks failed %d", ret);
         goto out;
     }
+
+//    system("cat /sys/fs/cgroup/cpu/cont_suka/tasks");
 
 //    sprintf(buf, "cat %s/cont_suka/tasks", work_dir);
 //    ret = system(buf);
@@ -53,10 +55,9 @@ out:
     return ret;
 }
 
-int jump_cgroups(const char * work_dir) {
+int jump_cgroups(const char * work_dir, pid_t pid) {
     sleep(1);
     char buf[100];
-    pid_t pid = getpid();
 //    LOG(LOG_NULL, "PID %d", pid);
     sprintf(buf, "echo %d >> %s/cont_suka/tasks", pid, work_dir);
 

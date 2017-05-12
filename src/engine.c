@@ -21,6 +21,8 @@
 #define STACK_SIZE 1024*1024
 #define ENGINE_WORKDIR "/etc/aucont"
 
+
+#define HUYNA "/sys/fs/cgroup/cpu/"
 char child_stack[STACK_SIZE];
 
 struct child_args {
@@ -52,13 +54,11 @@ static int child_body(void * __arg) {
     if (ns_setup(&arg->ns_arg))
         return 1;
 
-//    configurate_cgroups("/tmp/huy", arg->cpu);
-
     if (daemon) {
         LOG(LOG_DEBUG, "becoming daemon");
         become_daemon(old_pid);
     }
-
+//
     free(arg);
 
     execv(filename, argv);
@@ -104,13 +104,17 @@ static pid_t born_child(struct child_args * child_arg, struct aucont_start_args 
 //    seteuid(1000);
 
 //    system("../aucont/scripts/setup_cgroups.sh");
-
+//    jump_cgroups(HUYNA, );
     if (ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path, args->net_set ? args->net : NULL))
         return -1;
 
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
-
+//    system("cat /sys/fs/cgroup/cpu/cont_suka/tasks");
     if (ret != -1) {
+        configurate_cgroups(HUYNA, child_arg->cpu, ret);
+        LOG(LOG_NULL, "CPU %d", child_arg->cpu);
+//        jump_cgroups(HUYNA, ret);
+//        system("cat HUYNAcont_suka/tasks");
         ns_post_host(&child_arg->ns_arg, ret);
     }
 
@@ -159,12 +163,15 @@ int aucont_exec(struct aucont_exec_args *args) {
 //    int fd = open("/var/run/netns/my_netns", O_RDONLY);
 //    setns(fd, CLONE_NEWNET);
 //
+//    system("echo SHIT `cat HUYNAcont_suka/cpu.cfs_quota_us`");
+    if (jump_cgroups(HUYNA, getpid())) {
+        return 1;
+    }
     ns_common_setns(args->pid, "net", CLONE_NEWNET);
     if (ns_jump(args->pid, ALL_NS))
         return 1;
+//        system("cat /sys/fs/cgroup/cpu/cont_suka/tasks");
 //    net_ns_jump(net_ns, 0);
-//    if (jump_cgroups("/tmp/huy"))
-//        return 1;
 
 //    system("ping 10.0.0.2");
 //    LOG(LOG_NULL, "ls -l /bin/ping");

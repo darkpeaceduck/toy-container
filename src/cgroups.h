@@ -5,5 +5,5 @@ struct cgroups_args {
     pid_t pid;
 };
 
-int configurate_cgroups(const char * work_dir, int cpu);
-int jump_cgroups(const char * work_dir);
+int configurate_cgroups(const char * work_dir, int cpu, pid_t pid);
+int jump_cgroups(const char * work_dir, pid_t pid);

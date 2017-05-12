@@ -51,10 +51,10 @@ int ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location,
 
     if (net) {
         int oct[4];
-        scanf(net, "%d.%d.%d.%d", oct[0], oct[1], oct[2], oct[3]);
+        sscanf(net, "%hhu.%hhu.%hhu.%hhu", oct, oct + 1, oct + 2, oct + 3);
 
         strcpy(arg->src_host, net);
-        sprintf(arg->dst_host, "%d.%d.%d.%d", oct[0], oct[1], oct[2], oct[3] + 1);
+        sprintf(arg->dst_host, "%hhu.%hhu.%hhu.%hhu", oct[0], oct[1], oct[2], oct[3] + 1);
     }
 
     return ns_prepare_setup(arg);

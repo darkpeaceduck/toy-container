@@ -48,6 +48,7 @@ static int child_body(void * __arg) {
 //    int fd = open("/var/run/my_netns", O_RDONLY);
 //    setns(fd, 0);
 
+    net_ns_jump(arg->ns_arg.net_ns_name, 0);
     if (ns_setup(&arg->ns_arg))
         return 1;
 
@@ -156,12 +157,14 @@ int aucont_list(struct aucont_list_args *args) {
 int aucont_exec(struct aucont_exec_args *args) {
     char net_ns[100];
     journal_get_netns_name(journal_produce_workdir(ENGINE_WORKDIR, args->pid), net_ns);
-    net_ns_jump(net_ns, 0);
+//    LOG(LOG_NULL, "NET NS NAME %s", net_ns);
 //    int fd = open("/var/run/netns/my_netns", O_RDONLY);
 //    setns(fd, CLONE_NEWNET);
 //
-//    if (ns_jump(args->pid, ALL_NS))
-//        return 1;
+    ns_common_setns(args->pid, "net", CLONE_NEWNET);
+    if (ns_jump(args->pid, ALL_NS))
+        return 1;
+//    net_ns_jump(net_ns, 0);
 //    if (jump_cgroups("/tmp/huy"))
 //        return 1;
 

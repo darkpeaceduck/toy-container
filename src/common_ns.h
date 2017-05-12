@@ -9,7 +9,7 @@
 
 //#define ALL_NS (CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWNS)
 //#define ALL_NS (CLONE_NEWUSER | 0)
-#define ALL_NS (CLONE_NEWNET | 0)
+#define ALL_NS (CLONE_NEWNET | CLONE_NEWNS | 0)
 
 struct child_ns_arg {
     int (*user_setup)(void);

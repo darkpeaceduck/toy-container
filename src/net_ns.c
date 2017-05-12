@@ -13,9 +13,11 @@
 #define ENV_PATH_PREFIX "/var/run/netns/"
 
 static void generate_rand_suffix(char * s) {
+    int i = 0;
     s[RAND_SUFFIX_LEN] = 0;
     static const char * alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (int i = 0; i < RAND_SUFFIX_LEN; i++) {
+//    srand(time);
+    for (; i < RAND_SUFFIX_LEN; i++) {
         s[i] = alpha[rand() % sizeof(alpha)];
     }
 }

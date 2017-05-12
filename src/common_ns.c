@@ -51,6 +51,7 @@ int ns_prepare(struct child_ns_arg * arg, int flags, const char *image_location,
         return 1;
 
     if (net) {
+        arg->net_set = 1;
         unsigned char oct[4];
         sscanf(net, "%hhu.%hhu.%hhu.%hhu", oct, oct + 1, oct + 2, oct + 3);
 
@@ -139,8 +140,10 @@ int ns_post_host(struct child_ns_arg * arg, pid_t pid) {
         ret = user_ns_change_mapping(pid, 0, 0, uid, gid);
     }
 
-    ret = net_ns_setup(arg->src_host, arg->dst_host, pid);
-    net_ns_jump(pid, 0);
+    if (arg->net_set) {
+        ret = net_ns_setup(arg->src_host, arg->dst_host, pid);
+        net_ns_jump(pid, 0);
+    }
     close(arg->sync_pipe[1]);
     return ret;
 }

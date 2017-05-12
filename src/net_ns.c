@@ -39,12 +39,13 @@ int net_ns_jump(pid_t pid, int flag) {
         fail_msg = "(commono net_ns_jump) fail setns";
     }
 out:
-    LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
+    if (ret)
+        LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
     return ret;
 }
 
 void net_ns_cleanup(pid_t pid) {
     char buf[100];
-    sprintf(buf, "ip link delete veth0_%d", pid);
+    sprintf(buf, "ip link delete veth0_%d 2>/dev/null", pid);
     system(buf);
 }

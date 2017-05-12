@@ -34,6 +34,7 @@ struct child_args {
 };
 
 static void container_cleanup(pid_t pid) {
+    net_ns_cleanup(pid);
     journal_remove_id(ENGINE_WORKDIR, pid);
 }
 

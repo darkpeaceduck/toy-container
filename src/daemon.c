@@ -19,6 +19,4 @@ void stop_daemon(pid_t pid, int sig) {
     int status;
     kill(pid, sig);
     waitpid(pid, &status, 0);
-
-    net_ns_cleanup(pid);
 }

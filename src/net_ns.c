@@ -44,7 +44,7 @@ out:
 }
 
 void net_ns_cleanup(pid_t pid) {
-//    char buf[100];
-//    sprintf(buf, "ip link delete veth0_%d", pid);
-//    system(buf);
+    char buf[100];
+    sprintf(buf, "ip link delete veth0_%d", pid);
+    system(buf);
 }

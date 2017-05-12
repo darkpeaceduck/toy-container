@@ -22,7 +22,6 @@
 #define ENGINE_WORKDIR "/etc/aucont"
 
 
-#define HUYNA "/sys/fs/cgroup/cpu/"
 char child_stack[STACK_SIZE];
 
 struct child_args {
@@ -111,7 +110,8 @@ static pid_t born_child(struct child_args * child_arg, struct aucont_start_args 
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
 //    system("cat /sys/fs/cgroup/cpu/cont_suka/tasks");
     if (ret != -1) {
-        configurate_cgroups(HUYNA, child_arg->cpu, ret);
+        configurate_cgroups(child_arg->cpu, ret);
+        jump_cgroups(ret, ret);
         LOG(LOG_NULL, "CPU %d", child_arg->cpu);
 //        jump_cgroups(HUYNA, ret);
 //        system("cat HUYNAcont_suka/tasks");
@@ -164,7 +164,7 @@ int aucont_exec(struct aucont_exec_args *args) {
 //    setns(fd, CLONE_NEWNET);
 //
 //    system("echo SHIT `cat HUYNAcont_suka/cpu.cfs_quota_us`");
-    if (jump_cgroups(HUYNA, getpid())) {
+    if (jump_cgroups(args->pid, getpid())) {
         return 1;
     }
     ns_common_setns(args->pid, "net", CLONE_NEWNET);

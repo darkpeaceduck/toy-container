@@ -66,8 +66,6 @@ int ns_setup(struct child_ns_arg * arg) {
         goto out;
     }
 
-    net_ns_jump(getpid(), 0);
-
     RUNE(ret, arg->ns_flags, CLONE_NEWUSER, arg->user_setup);
     if (ret)
        goto out;
@@ -124,6 +122,10 @@ int ns_jump(pid_t pid, int flag) {
         goto out;
 
     RUNE(ret, flag, CLONE_NEWUSER, user_ns_jump, pid);
+    if (ret)
+        goto out;
+
+    ret = ns_common_setns(pid, "pid", CLONE_NEWPID);
     if (ret)
         goto out;
 out:

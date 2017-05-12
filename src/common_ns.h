@@ -5,7 +5,7 @@
 #define NS_FAIL 1
 #define NS_OK 0
 
-#define ALL_NS (CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWUSER)
+#define ALL_NS (CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWUSER | CLONE_NEWPID)
 
 struct child_ns_arg {
     int (*user_setup)(void);

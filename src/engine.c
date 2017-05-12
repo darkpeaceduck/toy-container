@@ -16,6 +16,7 @@
 #include "journal.h"
 #include "user_ns.h"
 #include "cgroups.h"
+#include "common_ns.h"
 
 #define STACK_SIZE 1024*1024
 #define ENGINE_WORKDIR "/etc/aucont"
@@ -48,7 +49,6 @@ static int child_body(void * __arg) {
 //    int fd = open("/var/run/my_netns", O_RDONLY);
 //    setns(fd, 0);
 
-    net_ns_jump(arg->ns_arg.net_ns_name, 0);
     if (ns_setup(&arg->ns_arg))
         return 1;
 
@@ -134,7 +134,6 @@ int aucont_start(struct aucont_start_args * args) {
         return 1;
     }
     journal_add_id(ENGINE_WORKDIR, child_pid);
-    journal_put_netns_name(journal_produce_workdir(ENGINE_WORKDIR, child_pid), child_arg->ns_arg.net_ns_name);
 
     printf("%d\n", child_pid);
 
@@ -156,7 +155,6 @@ int aucont_list(struct aucont_list_args *args) {
 
 int aucont_exec(struct aucont_exec_args *args) {
     char net_ns[100];
-    journal_get_netns_name(journal_produce_workdir(ENGINE_WORKDIR, args->pid), net_ns);
 //    LOG(LOG_NULL, "NET NS NAME %s", net_ns);
 //    int fd = open("/var/run/netns/my_netns", O_RDONLY);
 //    setns(fd, CLONE_NEWNET);

@@ -5,5 +5,3 @@ void journal_add_id(const char * journal_location, pid_t id);
 void journal_remove_id(const char * journal_location, pid_t id);
 void journal_print_ids(const char * journal_location);
 char* journal_produce_workdir(const char * journal_location, pid_t id);
-void journal_put_netns_name(const char * journal_location, const char * name);
-void journal_get_netns_name(const char * journal_location, char * name);

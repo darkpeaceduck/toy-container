@@ -23,30 +23,6 @@ char* journal_produce_workdir(const char * journal_location, pid_t id) {
     return buf;
 }
 
-void journal_put_netns_name(const char * journal_location, const char * name) {
-    char * buf = malloc(strlen(journal_location) + strlen(name) + 100);
-    FILE * f ;
-
-    buf[0] = 0;
-    sprintf(buf, "%s/%s", journal_location, NET_NS_NAME);
-    f = fopen(buf, "w");
-    fputs(name, f);
-    fclose(f);
-    free(buf);
-}
-
-void journal_get_netns_name(const char * journal_location, char * name) {
-    char * buf = malloc(strlen(journal_location) + strlen(name) + 100);
-    FILE * f ;
-
-    buf[0] = 0;
-    sprintf(buf, "%s/%s", journal_location, NET_NS_NAME);
-    f = fopen(buf, "r");
-    fgets(name, MAX_NS_NAME, f);
-    fclose(f);
-    free(buf);
-}
-
 void journal_add_id(const char * journal_location, pid_t id) {
     journal_check_existiting(journal_location);
     char * buf = malloc(strlen(journal_location) + 100);

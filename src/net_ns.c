@@ -12,32 +12,20 @@
 #define RAND_SUFFIX_LEN 10
 #define ENV_PATH_PREFIX "/var/run/netns/"
 
-static void generate_rand_suffix(char * s) {
-    int i = 0;
-    s[RAND_SUFFIX_LEN] = 0;
-    static const char * alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-//    srand(time);
-    for (; i < RAND_SUFFIX_LEN; i++) {
-        s[i] = alpha[rand() % sizeof(alpha)];
-    }
-}
 
-int net_ns_setup(char * name, const char * src, const char *dst) {
+int net_ns_setup(const char * src, const char *dst, pid_t pid) {
     char buf[100];
-    char suf[100];
-    generate_rand_suffix(suf);
-    sprintf(name, "aucont-%s", suf);
-    sprintf(buf, "%s %s %s %s", SCRIPT_PATH, name, src, dst);
+    sprintf(buf, "%s %d %s %s", SCRIPT_PATH, pid, src, dst);
     return system(buf);
 }
 
-int net_ns_jump(const char * name, int flag) {
+int net_ns_jump(pid_t pid, int flag) {
     char path[100];
     int fd;
     int ret = 0;
     const char * fail_msg = 0;
 
-    sprintf(path, "%s%s", ENV_PATH_PREFIX, name);
+    sprintf(path, "%s%d", ENV_PATH_PREFIX, pid);
 
     fd = open(path, O_RDONLY);
     if (fd == -1) {
@@ -53,4 +41,10 @@ int net_ns_jump(const char * name, int flag) {
 out:
     LOG(LOG_NULL, "%s errno=%s", fail_msg, strerror(errno));
     return ret;
+}
+
+void net_ns_cleanup(pid_t pid) {
+//    char buf[100];
+//    sprintf(buf, "ip link delete veth0_%d", pid);
+//    system(buf);
 }

@@ -34,5 +34,7 @@ int ns_post_host(struct child_ns_arg * arg, pid_t pid);
 
 int ns_common_setns(pid_t pid, const char * label, int flag);
 
-int net_ns_jump(const char * name, int flag);
-int net_ns_setup(char * name, const char * src, const char *dst);
+
+int net_ns_setup(const char * src, const char *dst, pid_t pid) ;
+int net_ns_jump(pid_t pid, int flag);
+void net_ns_cleanup(pid_t pid);

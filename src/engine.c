@@ -9,12 +9,10 @@
 #include <sys/wait.h>
 #include <time.h>
 #include "engine.h"
-#include "utc_ns.h"
 #include "common_ns.h"
 #include "log.h"
 #include "daemon.h"
 #include "journal.h"
-#include "user_ns.h"
 #include "cgroups.h"
 #include "common_ns.h"
 

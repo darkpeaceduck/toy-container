@@ -7,7 +7,6 @@
 #include <errno.h>
 
 #include "common_ns.h"
-#include "utc_ns.h"
 #include "log.h"
 
 int setup_utc_ns(const char * hostname) {

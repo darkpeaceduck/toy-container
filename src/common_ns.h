@@ -34,3 +34,14 @@ int ns_common_setns(pid_t pid, const char * label, int flag);
 int net_ns_setup(const char * src, const char *dst, pid_t pid) ;
 int net_ns_jump(pid_t pid, int flag);
 void net_ns_cleanup(pid_t pid);
+
+int user_ns_setup();
+int user_ns_change_mapping(pid_t pid, uid_t new_uid, gid_t new_gid, uid_t old_uid, gid_t old_gid);
+int user_ns_jump(pid_t pid);
+
+int setup_utc_ns(const char * hostname);
+int utc_ns_jump(pid_t pid);
+
+int mount_image(const char *image_location);
+int mount_ns_jump(pid_t pid);
+

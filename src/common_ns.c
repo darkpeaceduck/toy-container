@@ -6,9 +6,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "common_ns.h"
-#include "utc_ns.h"
-#include "fs.h"
-#include "user_ns.h"
 #include "log.h"
 
 #define IS_FLAG_SET(a, flag) (a & flag)

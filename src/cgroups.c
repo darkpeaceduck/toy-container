@@ -5,10 +5,7 @@
 #include "log.h"
 #include <errno.h>
 
-//#define CONFIGURATE_SCRIPT_PATH
-
-//int preconfigurate_cgroups(const char * work_dir)
-
+/* no mount, no grep mtab - just add task to cpu cgroup */
 #define SYSTEM_CPU_SGROUP_PREFIX "/sys/fs/cgroup/cpu"
 
 static void make_work_dir(pid_t pid, char * name) {
@@ -28,13 +25,6 @@ int configurate_cgroups(int cpu, pid_t pid) {
         goto out;
     }
 
-
-//    sprintf(buf, "echo %d > %s/cont_suka/tasks", pid, work_dir);
-//    ret = system(buf);
-//    if (ret) {
-//        LOG(LOG_NULL, "tasks failed %d", ret);
-//        goto out;
-//    }
 
     int nproc =   sysconf (_SC_NPROCESSORS_CONF);
     int period = 1000000;
@@ -63,11 +53,9 @@ out:
 }
 
 int jump_cgroups(pid_t cont_pid, pid_t add) {
-    sleep(1);
     char buf[100];
     char work_dir[100];
     make_work_dir(cont_pid, work_dir);
-//    LOG(LOG_NULL, "PID %d", pid);
     sprintf(buf, "echo %d >> %s/tasks", add, work_dir);
 
     int ret = system(buf);
@@ -75,14 +63,6 @@ int jump_cgroups(pid_t cont_pid, pid_t add) {
        LOG(LOG_NULL, "failed jump to ns %d", ret);
        goto out;
     }
-
-//    sprintf(buf, "cat %s/cont_suka/tasks", work_dir);
-//    ret = system(buf);
-//    if (ret) {
-//       LOG(LOG_NULL, "cat failed %d", ret);
-//       goto out;
-//    }
-//    LOG(LOG_NULL, "JUMP OKKK!!");
 out:
     return ret;
 }

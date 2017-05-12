@@ -7,10 +7,6 @@
 
 #define ALL_NS (CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWNS | CLONE_NEWNET | CLONE_NEWUSER)
 
-//#define ALL_NS (CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWNS)
-//#define ALL_NS (0 | 0)
-//#define ALL_NS (CLONE_NEWNET | CLONE_NEWNS | 0)
-
 struct child_ns_arg {
     int (*user_setup)(void);
     int (*utc_setup)(const char *hostname);

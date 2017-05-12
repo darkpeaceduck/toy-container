@@ -47,8 +47,6 @@ static int child_body(void * __arg) {
     pid_t old_pid = getpid();
     int daemon = arg->daemonize;
 
-//    int fd = open("/var/run/my_netns", O_RDONLY);
-//    setns(fd, 0);
 
     if (ns_setup(&arg->ns_arg))
         return 1;
@@ -57,7 +55,7 @@ static int child_body(void * __arg) {
         LOG(LOG_DEBUG, "becoming daemon");
         become_daemon(old_pid);
     }
-//
+
     free(arg);
 
     execv(filename, argv);
@@ -82,39 +80,16 @@ static pid_t born_child(struct child_args * child_arg, struct aucont_start_args 
     child_arg->exec_argv = args->forward_argv;
     child_arg->daemonize = args->daemonize;
     child_arg->cpu = args->cpu_perc;
-//    child_arg->configurate_cgroups = configurate_cgroups;
 
-//
-//    if (system("chown 1000:1000 -R /sys/fs/cgroup/cpu/")) {
-//        LOG(LOG_NULL, "failed chown");
-//        return -1;
-//    }
 
-//    LOG(LOG_NULL, "USER UID %d", getuid());
-//    setuid(0);
-//    system("mkdir -p ../rootfs/tmp/huy");
-//    system("mount -t cgroup -o cpu,cpuacct test ../rootfs/tmp/huy");
-//
-//    if (system("chown 1000:1000 -R ../rootfs/tmp/huy")) {
-//            LOG(LOG_NULL, "failed chown");
-//            return -1;
-//        }
-
-//    seteuid(1000);
-
-//    system("../aucont/scripts/setup_cgroups.sh");
-//    jump_cgroups(HUYNA, );
     if (ns_prepare(&child_arg->ns_arg, ALL_NS, args->image_path, args->net_set ? args->net : NULL))
         return -1;
 
     ret = enter_child_body(child_arg, produce_clone_flags(child_arg));
-//    system("cat /sys/fs/cgroup/cpu/cont_suka/tasks");
+
     if (ret != -1) {
         configurate_cgroups(child_arg->cpu, ret);
         jump_cgroups(ret, ret);
-        LOG(LOG_NULL, "CPU %d", child_arg->cpu);
-//        jump_cgroups(HUYNA, ret);
-//        system("cat HUYNAcont_suka/tasks");
         ns_post_host(&child_arg->ns_arg, ret);
     }
 
@@ -158,23 +133,13 @@ int aucont_list(struct aucont_list_args *args) {
 }
 
 int aucont_exec(struct aucont_exec_args *args) {
-    char net_ns[100];
-//    LOG(LOG_NULL, "NET NS NAME %s", net_ns);
-//    int fd = open("/var/run/netns/my_netns", O_RDONLY);
-//    setns(fd, CLONE_NEWNET);
-//
-//    system("echo SHIT `cat HUYNAcont_suka/cpu.cfs_quota_us`");
     if (jump_cgroups(args->pid, getpid())) {
         return 1;
     }
-    ns_common_setns(args->pid, "net", CLONE_NEWNET);
+
     if (ns_jump(args->pid, ALL_NS))
         return 1;
-//        system("cat /sys/fs/cgroup/cpu/cont_suka/tasks");
-//    net_ns_jump(net_ns, 0);
 
-//    system("ping 10.0.0.2");
-//    LOG(LOG_NULL, "ls -l /bin/ping");
     if (execv(args->cmd_filename, args->forward_argv)) {
         return 1;
     }

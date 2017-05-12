@@ -28,13 +28,6 @@
 
 
 static int ns_prepare_setup(struct child_ns_arg * arg) {
-//    int ret = 0;
-//    RUNE(ret, arg->ns_flags, CLONE_NEWNET, net_ns_setup, arg->net_ns_name, arg->src_host, arg->dst_host);
-//    if (ret)
-//       goto out;
-//    RUNE(ret, arg->ns_flags, CLONE_NEWNET, net_ns_jump, arg->net_ns_name, 0);
-//out:
-//    return ret;
     return 0;
 }
 
@@ -117,6 +110,11 @@ out:
 
 int ns_jump(pid_t pid, int flag) {
     int ret = 0;
+
+    ret = ns_common_setns(pid, "net", CLONE_NEWNET);
+    if (ret)
+        goto out;
+
     RUNE(ret, flag, CLONE_NEWUTS, utc_ns_jump, pid);
     if (ret)
         goto out;
@@ -127,24 +125,40 @@ int ns_jump(pid_t pid, int flag) {
 
     RUNE(ret, flag, CLONE_NEWUSER, user_ns_jump, pid);
     if (ret)
-            goto out;
+        goto out;
 out:
     return ret;
 }
 
 int ns_post_host(struct child_ns_arg * arg, pid_t pid) {
+    const char * fail_msg = NULL;
     int ret = 0;
     if (IS_FLAG_SET(arg->ns_flags, CLONE_NEWUSER)) {
         uid_t uid = geteuid();
         gid_t gid = getegid();
         ret = user_ns_change_mapping(pid, 0, 0, uid, gid);
+        if (ret) {
+            fail_msg = "failed set mapping";
+            goto out;
+        }
     }
 
     if (arg->net_set) {
         ret = net_ns_setup(arg->src_host, arg->dst_host, pid);
-        net_ns_jump(pid, 0);
+        if (ret) {
+            fail_msg = "failed setup netns";
+            goto out;
+        }
+        ret = net_ns_jump(pid, 0);
+        if (ret) {
+            fail_msg = "failed jump netns";
+            goto out;
+        }
     }
+out:
     close(arg->sync_pipe[1]);
+    if (ret)
+        LOG(LOG_NULL, "%s", fail_msg);
     return ret;
 }
 
